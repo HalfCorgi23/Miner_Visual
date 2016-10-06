@@ -1,0 +1,51 @@
+{
+    //黑色通道下阈值
+    "H_Min_Black":0,
+    "S_Min_Black":0,
+    "V_Min_Black":0,
+
+    //黑色通道上阈值
+    "H_Max_Black":180,
+    "S_Max_Black":255,
+    "V_Max_Black":46,
+
+    //障碍色通道下阈值
+    "H_Min_Barrier":11,
+    "S_Min_Barrier":43,
+    "V_Min_Barrier":46,
+
+    //障碍色通道上阈值
+    "H_Max_Barrier":25,
+    "S_Max_Barrier":255,
+    "V_Max_Barrier":255,
+
+    //蓝色通道下阈值
+    "H_Min_Blue":100,
+    "S_Min_Blue":43,
+    "V_Min_Blue":46,
+
+    //蓝色通道上阈值
+    "H_Max_Blue":124,
+    "S_Max_Blue":255,
+    "V_Max_Blue":255,
+
+    //红色通道下阈值
+    "H_Min_Red":156,
+    "S_Min_Red":43,
+    "V_Min_Red":46,
+
+    //红色通道上阈值
+    "H_Max_Red":180,
+    "S_Max_Red":255,
+    "V_Max_Red":255,
+
+    //白色通道下阈值
+    "H_Min_White":0,
+    "S_Min_White":0,
+    "V_Min_White":221,
+
+    //白色通道上阈值
+    "H_Max_White":180,
+    "S_Max_White":30,
+    "V_Max_White":255
+}
