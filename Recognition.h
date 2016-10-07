@@ -22,14 +22,12 @@ const int BLACKBALL = 0;//黑色球
 const int WHITEBALL = 4;//白色球
 const int TARGET_NOT_FOUND = 0;//未找到目标
 const int TARGET_FOUND = 1;//已找到目标
-const int BALL_SQUARE_MIN = 400;//球的最小面积
-const int BALL_SQUARE_MAX = 1000;//球的最大面积
 const int CAMERA_0 = 0;//0#摄像头
 const int CAMERA_1 = 1;//1#摄像头
 const int CAMERA_2 = 2;//2#摄像头
 
 /*目标识别(输入图像编号，图像显示开关)；摄像头 0：CAMERA_0，摄像头 1：CAMERA_1，摄像头 2：CAMERA_2；图像显示：DISPLAY_ON 开，DISPLAY_OFF 关
-Recognition::Recognize(Mat input) - 识别函数（(Mat)输入图像）
+Recognition::Recognize() - 识别函数
 Recognition::X[4] - 目标X坐标数组 {球，障碍，蓝色区域，红色区域}，-1为未发现目标
 Recognition::Y[4] - 目标Y坐标数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标
 Recognition::Square[4] - 目标面积数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标

@@ -4,6 +4,9 @@
 using namespace cv;
 using namespace std;
 
+const int BALL_SQUARE_MIN = 400;//球的最小面积
+const int BALL_SQUARE_MAX = 1000;//球的最大面积
+
 Mat Source;/*源图像*/
 Mat Hsv_Source;/*HSV图像*/
 Mat Gass_Source;/*高斯图像*/

@@ -376,8 +376,8 @@ int main()
 	while (1)
 	{
 		REC_0.Recognize();
-		//REC_1.Recognize();
-		//REC_2.Recognize();
+		REC_1.Recognize();
+		REC_2.Recognize();
 		Serial_Print();
 	}
 	return 0;
