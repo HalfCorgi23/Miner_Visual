@@ -22,9 +22,9 @@ const int BLACKBALL = 0;//黑色球
 const int WHITEBALL = 4;//白色球
 const int TARGET_NOT_FOUND = 0;//未找到目标
 const int TARGET_FOUND = 1;//已找到目标
-const int CAMERA_0 = 0;//0#摄像头
+const int CAMERA_0 = 2;//0#摄像头
 const int CAMERA_1 = 1;//1#摄像头
-const int CAMERA_2 = 2;//2#摄像头
+const int CAMERA_2 = 0;//2#摄像头
 
 /*目标识别(输入图像编号，图像显示开关)；摄像头 0：CAMERA_0，摄像头 1：CAMERA_1，摄像头 2：CAMERA_2；图像显示：DISPLAY_ON 开，DISPLAY_OFF 关
 Recognition::Recognize() - 识别函数
@@ -47,8 +47,11 @@ public:
 
 	//识别操作((Mat)输入图像)
 	int Recognize();
+
 private:
-	char d;
+	cv::VideoCapture *Camera;//识别对象摄像头实例
+
+	int Camera_Num;//摄像头编号
 
 	//配置文件获取
 	void Json_Get();

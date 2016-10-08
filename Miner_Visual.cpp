@@ -7,7 +7,7 @@
 #include "Serial_Connect.h"
 
 const int VERSION = 1;
-const int TEST = 0;
+const int TEST = 5;
 const int ZONE_SQUARE_L = 4000;//盒子面积阈值
 const int SERIAL_DELAY_MS = 2; //串口发送间隔
 const int LOCATION_LEFT = 220;//左侧位置
@@ -18,6 +18,7 @@ const int LOCATION_RIGHT_1 = 384;//偏右侧位置
 const int LOCATION_RIGHT_0 = 512;//正右侧位置
 
 using namespace cv;
+using namespace std;
 
 Serial_Connect Serial(COM4);//声明串口COM4
 
@@ -379,6 +380,7 @@ int main()
 		REC_1.Recognize();
 		REC_2.Recognize();
 		Serial_Print();
+		waitKey(33);
 	}
 	return 0;
 }

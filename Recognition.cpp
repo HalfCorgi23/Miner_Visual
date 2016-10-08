@@ -17,14 +17,11 @@ Mat Black_Limit;//黑色限制图像
 Mat White_Limit;//白色限制图像
 Mat Out_Put;//最终输出图像
 
-VideoCapture *Capture_Camera;//摄像头
-
 Rect Red_Zone;//红色矩形区域
 Rect Blue_Zone;//蓝色矩形区域
 Rect Barrier_Zone;//障碍物矩形区域
 
 int Display_Switch;//图像显示开关
-int Camera_Num;//摄像头编号
 int Target_Width;//目标宽度
 int Target_Height;//目标高度
 int Target;//是否找到目标
@@ -94,57 +91,46 @@ void Recognition::Json_Get()
 	IFS.close();
 }
 
+void Camera_Detect(VideoCapture *input,int came_num)
+{
+	printf_s("SETUP: ");
+	if (input->isOpened() == true)
+	{
+		printf_s("#"); printf_s("%d", came_num); printf_s(" camera is opened!\n");
+	}
+	else
+	{
+		printf_s("#"); printf_s("%d", came_num); printf_s(" camera is closed!\n");
+		printf_s("WARNING: Press ant key to continue...\n");
+		waitKey(0);
+		char e;
+		scanf_s(&e);
+	}
+	for (int i = 0; i < 30; i++)
+	{
+		input->read(Source);
+		waitKey(33);
+	}
+}
+
 Recognition::Recognition(int camera_num, int display_sw)
 {
 	Display_Switch = display_sw;
 	Camera_Num = camera_num;
-	Capture_Camera = new VideoCapture(camera_num);
-	Capture_Camera->read(Source);
-	printf_s("SETUP: ");
-	if (Capture_Camera->isOpened() == true)
-	{
-		printf_s("#");printf_s("%d", Camera_Num);printf_s(" camera is opened!\n");
-	}
-	else
-	{
-		printf_s("#");printf_s("%d", Camera_Num);printf_s(" camera is closed!\n");
-		printf_s("WARNING: Press ant key to continue...\n");
-		waitKey(0);
-		scanf_s(&d);
-	}
-	for (int i = 0;i < 10;i++)
-	{
-		Capture_Camera->read(Source);
-		waitKey(33);
-	}
+	Camera = new VideoCapture(camera_num);
+	Camera_Detect(Camera, camera_num);
+	Camera->read(Source);
 	Json_Get();
-	waitKey(33);
 }
 
 Recognition::Recognition()
 {
 	Display_Switch = DISPLAY_OFF;
 	Camera_Num = 0;
-	Capture_Camera = new VideoCapture(0);
-	Display_Title = "#0摄像头";
-	Capture_Camera->read(Source);
-	printf_s("SETUP: ");
-	if (Capture_Camera->isOpened() == true)
-	{
-		printf_s("#0 camera is opened!\n");
-	}
-	else
-	{
-		printf_s("#0 camera is closed!\n");
-		printf_s("Press ant key to continue...\n");
-		char d;scanf_s("%s", &d);
-	}
-	for (int i = 0;i < 10;i++)
-	{
-		Capture_Camera->read(Source);
-		waitKey(33);
-	}
-	waitKey(33);
+	Camera = new VideoCapture(0);
+	Camera_Detect(Camera, 0);
+	Camera->read(Source);
+	Json_Get();
 }
 
 void Recognition::Channel_Separation()
@@ -345,7 +331,7 @@ int Recognition::Find_Ball()
 
 int Recognition::Recognize()
 {
-	Capture_Camera->read(Source);//读取摄像头
+	Camera->read(Source);//读取摄像头
 	GaussianBlur(Source, Gass_Source, Size(15, 15), 4, 4);//高斯模糊
 	cvtColor(Gass_Source, Hsv_Source, COLOR_BGR2HSV);//RGB转HSV
 	Channel_Separation();
