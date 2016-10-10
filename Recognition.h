@@ -15,11 +15,11 @@
 const int DISPLAY_ON = 0;//显示处理结果开启
 const int DISPLAY_OFF = 1;//显示处理结果关闭
 const int BALL = 0;//球
-const int BARRIER = 1;//障碍
+const int BARRIER = 4;//障碍
 const int BLUEZONE = 2;//蓝色区域
 const int REDZONE = 3;//红色区域
 const int BLACKBALL = 0;//黑色球
-const int WHITEBALL = 4;//白色球
+const int WHITEBALL = 1;//白色球
 const int TARGET_NOT_FOUND = 0;//未找到目标
 const int TARGET_FOUND = 1;//已找到目标
 const int CAMERA_0 = 2;//0#摄像头

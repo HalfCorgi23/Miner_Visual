@@ -13,6 +13,8 @@ const int COM7 = 7;//串口COM7
 const int COM8 = 8;//串口COM8
 const int COM9 = 9;//串口COM9
 
+extern int Serial_Num;//串口编号
+
 using namespace std;
 
 #pragma once
@@ -31,7 +33,7 @@ COM3 串口3
 class Serial_Connect
 {
 public:
-	Serial_Connect(int serial_num);
+	Serial_Connect();
 
 	//初始化串口
 	int Serial_Init();

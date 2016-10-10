@@ -1,14 +1,14 @@
 #include "stdafx.h"
 #include "Serial_Connect.h"
 
-int Serial_Num;//串口编号
+
 
 using namespace std;
 
 /*声明串口*/
-Serial_Connect::Serial_Connect(int serial_num)
+Serial_Connect::Serial_Connect()
 {
-	Serial_Num = serial_num;
+	int serial_num=Serial_Num;
 	if (serial_num == 1)
 	{
 		Handle_Comm = CreateFile(_T("COM1:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM1，读写权限，独占方式，直接打开，同步方式

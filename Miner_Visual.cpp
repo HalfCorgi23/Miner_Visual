@@ -20,13 +20,15 @@ const int LOCATION_RIGHT_0 = 512;//正右侧位置
 using namespace cv;
 using namespace std;
 
-Serial_Connect Serial(COM4);//声明串口COM4
+Serial_Connect Serial;//声明串口COM4
 
 Recognition REC_0(CAMERA_0, DISPLAY_ON);//0#前摄像头识别实例
 Recognition REC_1(CAMERA_1, DISPLAY_ON);//1#左摄像头识别实例
 Recognition REC_2(CAMERA_2, DISPLAY_ON);//2#右摄像头识别实例
 
 int Serial_Statue;//串口状态
+
+int Serial_Num;//串口编号
 
 //串口通讯
 void Serial_Print()
@@ -370,8 +372,30 @@ void Imformation_Print()//启动信息显示
 	printf_s("%d******************|\n\n", TEST);
 }
 
+void Json_init()
+{
+	Json::Reader Config_Reader2;
+	Json::Value Config_Value2;
+	ifstream IFS2;
+	IFS2.open("config.json", ios::binary);
+	if (Config_Reader2.parse(IFS2, Config_Value2, false))
+	{
+		printf_s("SETUP: Json file reading...\n");
+		printf_s("SETUP: Loading Serial Port COM");
+		Serial_Num= Config_Value2["Serial_Port"].asInt();
+	}
+	else
+	{
+		printf_s("WARING: Json file read failed!\n");
+		printf_s("CUSTOM: Press any key to continue...\n");
+		char s; scanf_s(&s);
+	}
+	IFS2.close();
+}
+
 int main()
 {
+	Json_init();
 	Imformation_Print();
 	Serial_Statue = Serial.Serial_Init();
 	while (1)

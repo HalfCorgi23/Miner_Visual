@@ -1,8 +1,9 @@
 {
-    //黑色通道下阈值
+    //黑色通道阈值
     "H_Min_Black":0,
     "S_Min_Black":0,
-    "V_Min_Black":0,
+    "V_Min_Black": 0,
+    "Black_Threshold": 240,
 
     //黑色通道上阈值
     "H_Max_Black":180,
@@ -42,10 +43,16 @@
     //白色通道下阈值
     "H_Min_White":0,
     "S_Min_White":0,
-    "V_Min_White":221,
+    "V_Min_White": 221,
+    "White_Threshold": 225,
 
     //白色通道上阈值
     "H_Max_White":180,
     "S_Max_White":30,
-    "V_Max_White":255
+    "V_Max_White": 255,
+
+    //串口编号
+    "Serial_Port": 5
+
+
 }

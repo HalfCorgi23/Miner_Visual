@@ -5,7 +5,7 @@ using namespace cv;
 using namespace std;
 
 const int BALL_SQUARE_MIN = 400;//球的最小面积
-const int BALL_SQUARE_MAX = 1000;//球的最大面积
+const int BALL_SQUARE_MAX = 10000000;//球的最大面积
 
 Mat Source;/*源图像*/
 Mat Hsv_Source;/*HSV图像*/
@@ -16,6 +16,12 @@ Mat Barrier_Channel;/*障碍物通道*/
 Mat Black_Limit;//黑色限制图像
 Mat White_Limit;//白色限制图像
 Mat Out_Put;//最终输出图像
+Mat Input;
+Mat Binary;
+Mat Threshold;
+Mat BitwiseNot;
+Mat Dilate;
+Mat Output;
 
 Rect Red_Zone;//红色矩形区域
 Rect Blue_Zone;//蓝色矩形区域
@@ -36,6 +42,7 @@ int S_Range_Min[5];//S下阈值
 int S_Range_Max[5];//S上阈值
 int V_Range_Min[5];//V下阈值
 int V_Range_Max[5];//V上阈值
+int Threshold_Value[2];//黑白色球阈值
 
 string Display_Title;//结果显示标题
 
@@ -49,7 +56,7 @@ void Recognition::Json_Get()
 	IFS.open("config.json", ios::binary);
 	if (Config_Reader.parse(IFS, Config_Value, false))
 	{
-		printf_s("SETUP: Json file reading...\n\n");
+		printf_s("SETUP: Json file reading...\n");
 		H_Range_Min[BLACKBALL] = Config_Value["H_Min_Black"].asInt();
 		S_Range_Min[BLACKBALL] = Config_Value["S_Min_Black"].asInt();
 		V_Range_Min[BLACKBALL] = Config_Value["V_Min_Black"].asInt();
@@ -80,6 +87,9 @@ void Recognition::Json_Get()
 		H_Range_Max[WHITEBALL] = Config_Value["H_Max_White"].asInt();
 		S_Range_Max[WHITEBALL] = Config_Value["S_Max_White"].asInt();
 		V_Range_Max[WHITEBALL] = Config_Value["V_Max_White"].asInt();
+		Threshold_Value[WHITEBALL] = Config_Value["White_Threshold"].asInt();
+		Threshold_Value[BLACKBALL] = Config_Value["Black_Threshold"].asInt();
+
 		printf_s("SETUP: Json file read success!\n");
 	}
 	else
@@ -152,17 +162,23 @@ void Recognition::Channel_Separation()
 	inRange(Hsv_Source, Black_Range_0, Black_Range_1, Black_Limit);
 	inRange(Hsv_Source, White_Range_0, White_Range_1, White_Limit);
 	inRange(Hsv_Source, Barrier_Range_Min, Barrier_Range_Max, Barrier_Channel);
-	/*imshow("黑色通道", Black_Limit);
+	imshow("黑色通道", Black_Limit);
 	imshow("白色通道", White_Limit);
 	imshow("红色通道", Red_Channel);
 	imshow("蓝色通道", Blue_Channel);
-	imshow("障碍通道", Barrier_Channel);*/
+	imshow("障碍通道", Barrier_Channel);
 }
 
 double Recognition::Find_Black_Ball()
 {
-	
-	findContours(Black_Limit, Contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE); //寻找连通域
+	Input = Source.clone();
+	cvtColor(Input, Binary, CV_BGR2GRAY);
+	bitwise_not(Binary, BitwiseNot);
+	threshold(BitwiseNot, Threshold, Threshold_Value[BLACKBALL], 255, CV_THRESH_BINARY);
+	imshow("黑球反色图像", BitwiseNot);
+	dilate(Threshold, Dilate, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+	imshow("黑球膨胀图像", Dilate);
+	findContours(Dilate, Contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE); //寻找连通域
 	double Max_Area = 0;//最大连通域面积
 	vector<cv::Point> Max_Contour;
 	for (size_t i = 0; i < Contours.size(); i++)//寻找最大连通域
@@ -175,24 +191,39 @@ double Recognition::Find_Black_Ball()
 		}
 	}
 	Rect Max_Rect = boundingRect(Max_Contour);//最大连通域矩形
-
-	if (Max_Area < BALL_SQUARE_MIN || Max_Area > BALL_SQUARE_MAX)
+	int square = Max_Rect.height*Max_Rect.width;
+	stringstream ss;
+	ss << square;
+	string sqr_str;
+	ss >> sqr_str;
+	putText(Input, sqr_str, Point(Max_Rect.x, Max_Rect.y), 1, 2, Scalar(255, 0, 0), 2, 8, false);
+	if (square<30000)
 	{
-		Black_X = -1;
-		Black_Y = -1;
-		return -1;
+		int radius = sqrt(square) / 2 * 1.2;
+		circle(Input, Point(Max_Rect.x + radius, Max_Rect.y + radius), radius, Scalar(255, 0, 0), 2, 8, 0);
+		//imshow("白球结果图像", Input);
+		Black_X = Max_Rect.x + radius;
+		Black_Y = Max_Rect.y + radius;
+		return square;
 	}
 	else
 	{
-		Black_X = Max_Rect.x;
-		Black_Y = Max_Rect.y;
-		return Max_Area;
+		Black_X = -1;
+		Black_Y = -1;
+		//imshow("白球结果图像", Input);
+		return -1;
 	}
 }
 
 double Recognition::Find_White_Ball()
 {
-	findContours(White_Limit, Contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE); //寻找连通域
+	Input = Source.clone();
+	cvtColor(Input, Binary, CV_BGR2GRAY);
+	threshold(Binary, Threshold, Threshold_Value[WHITEBALL], 255, CV_THRESH_BINARY);
+	//imshow("阈值图像", Threshold);
+	dilate(Threshold, Dilate, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+	//imshow("白球膨胀图像", Dilate);
+	findContours(Dilate, Contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE); //寻找连通域
 	double Max_Area = 0;//最大连通域面积
 	vector<cv::Point> Max_Contour;
 	for (size_t i = 0; i < Contours.size(); i++)//寻找最大连通域
@@ -205,17 +236,27 @@ double Recognition::Find_White_Ball()
 		}
 	}
 	Rect Max_Rect = boundingRect(Max_Contour);//最大连通域矩形
-	if (Max_Area < BALL_SQUARE_MIN || Max_Area > BALL_SQUARE_MAX)
+	int square = Max_Rect.height*Max_Rect.width;
+	stringstream ss;
+	ss << square;
+	string sqr_str;
+	ss >> sqr_str;
+	putText(Input, sqr_str, Point(Max_Rect.x, Max_Rect.y), 1, 2, Scalar(255, 0, 0), 2, 8, false);
+	if (square<20000)
 	{
-		White_X = -1;
-		White_Y = -1;
-		return -1;
+		int radius = sqrt(square) / 2 * 1.2;
+		circle(Input, Point(Max_Rect.x + radius, Max_Rect.y + radius), radius, Scalar(255, 0, 0), 2, 8, 0);
+		//imshow("白球结果图像", Input);
+		White_X = Max_Rect.x + radius;
+		White_Y = Max_Rect.y + radius;
+		return square;
 	}
 	else
 	{
-		White_X = Max_Rect.x;
-		White_Y = Max_Rect.y;
-		return Max_Area;
+		White_X = -1;
+		White_Y = -1;
+		//imshow("白球结果图像", Input);
+		return -1;
 	}
 }
 
@@ -331,17 +372,20 @@ int Recognition::Find_Ball()
 
 int Recognition::Recognize()
 {
-	Camera->read(Source);//读取摄像头
-	GaussianBlur(Source, Gass_Source, Size(15, 15), 4, 4);//高斯模糊
-	cvtColor(Gass_Source, Hsv_Source, COLOR_BGR2HSV);//RGB转HSV
-	Channel_Separation();
-	Find_Ball();//找球
-	Find_Zone(BLUEZONE);//寻找蓝色区域
-	Find_Zone(REDZONE);//寻找红色区域
-	Find_Zone(BARRIER);//寻找障碍物
-	if (Display_Switch == DISPLAY_ON)//显示图像
+	if (Camera->isOpened())
 	{
-		Display_Result();
+		Camera->read(Source);//读取摄像头
+		GaussianBlur(Source, Gass_Source, Size(15, 15), 4, 4);//高斯模糊
+		cvtColor(Gass_Source, Hsv_Source, COLOR_BGR2HSV);//RGB转HSV
+		Channel_Separation();
+		Find_Ball();//找球
+		Find_Zone(BLUEZONE);//寻找蓝色区域
+		Find_Zone(REDZONE);//寻找红色区域
+		Find_Zone(BARRIER);//寻找障碍物
+		if (Display_Switch == DISPLAY_ON)//显示图像
+		{
+			Display_Result();
+		}
 	}
 	return 0;
 }
