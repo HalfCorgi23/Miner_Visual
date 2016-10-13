@@ -1,63 +1,72 @@
 // Miner_Visual.cpp : 定义控制台应用程序的入口点。
 
-
-
 #include "stdafx.h"
 #include "Recognition.h"
 #include "Serial_Connect.h"
+//
+//const int VERSION = 1;
+//const int TEST = 5;
+//const int ZONE_SQUARE_L = 4000;//盒子面积阈值
+//const int SERIAL_DELAY_MS = 2; //串口发送间隔
+//const int LOCATION_LEFT = 220;//左侧位置
+//const int LOCATION_RIGHT = 420;//右侧位置
+//const int LOCATION_LEFT_0 = 128;//正左侧位置
+//const int LOCATION_LEFT_1 = 256;//偏左侧位置
+//const int LOCATION_RIGHT_1 = 384;//偏右侧位置
+//const int LOCATION_RIGHT_0 = 512;//正右侧位置
+//
 
-const int VERSION = 1;
-const int TEST = 5;
-const int ZONE_SQUARE_L = 4000;//盒子面积阈值
-const int SERIAL_DELAY_MS = 2; //串口发送间隔
-const int LOCATION_LEFT = 220;//左侧位置
-const int LOCATION_RIGHT = 420;//右侧位置
-const int LOCATION_LEFT_0 = 128;//正左侧位置
-const int LOCATION_LEFT_1 = 256;//偏左侧位置
-const int LOCATION_RIGHT_1 = 384;//偏右侧位置
-const int LOCATION_RIGHT_0 = 512;//正右侧位置
+const int CAMERA_0 = 0;//0号摄像头
+const int CAMERA_1 = 1;//1号摄像头
+const int CAMERA_2 = 2;//2号摄像头
+const int VERSION = 2;//主版本
+const int TEST = 0;//测试版本
+const int RED_ZONE = 1;//红色区域
+const int BLUE_ZONE = 2;//红色区域
+const int BARRIERS = 3;//障碍物
+const int BALLS = 0;//球
+const int LOCATION_LEFT = 210;//左阈值
+const int LOCATION_RIGHT = 420;//右阈值
+const int LOCATION_LEFT_LESS = 250;//偏左阈值
+const int LOCATION_LEFT_MORE = 130;//过左阈值
+const int LOCATION_RIGHT_LESS = 390;//偏右阈值
+const int LOCATION_RIGHT_MORE = 510;//过右阈值
+const int ZONE_SQUARE_LIMIT = 60000;//区域面积阈值
 
-using namespace cv;
-using namespace std;
+extern int Recognize_Result_X[3][4];//识别结果X坐标数组
+extern int Recognize_Result_Y[3][4];//识别结果Y坐标数组
+extern int Recognize_Result_Square[3][4];//识别结果面积数组
 
 Serial_Connect Serial;//声明串口COM4
-
-Recognition REC_0(CAMERA_0, DISPLAY_ON);//0#前摄像头识别实例
-Recognition REC_1(CAMERA_1, DISPLAY_ON);//1#左摄像头识别实例
-Recognition REC_2(CAMERA_2, DISPLAY_ON);//2#右摄像头识别实例
-
-int Serial_Statue;//串口状态
-
-int Serial_Num;//串口编号
 
 //串口通讯
 void Serial_Print()
 {
 	//0信号位
 	Serial.Serial_Write("0");
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//1前摄像头球
-	if (REC_0.Square[BALL] == -1)
+	if (Recognize_Result_Square[CAMERA_0][BALLS] == -1)
 	{
 		Serial.Serial_Write("1");
 	}
-	else if (REC_0.X[BALL] >= 0 && REC_0.X[BALL] < LOCATION_LEFT)
+	else if (Recognize_Result_X[CAMERA_0][BALLS] >= 0 && Recognize_Result_X[CAMERA_0][BALLS]< LOCATION_LEFT)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_0.X[BALL] >= LOCATION_LEFT && REC_0.X[BALL] <= LOCATION_RIGHT)
+	else if (Recognize_Result_X[CAMERA_0][BALLS] >= LOCATION_LEFT && Recognize_Result_X[CAMERA_0][BALLS] <= LOCATION_RIGHT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_0.X[BALL] > LOCATION_RIGHT && REC_0.X[BALL] <= 640)
+	else if (Recognize_Result_X[CAMERA_0][BALLS] > LOCATION_RIGHT && Recognize_Result_X[CAMERA_0][BALLS] <= 640)
 	{
 		Serial.Serial_Write("4");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//2前摄像头障碍
-	if (REC_0.Square[BARRIER] != -1)
+	if (Recognize_Result_Square[CAMERA_0][BARRIERS] != -1)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -65,10 +74,10 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//3左摄像头球
-	if (REC_1.Square[BALL] != -1)
+	if (Recognize_Result_Square[CAMERA_1][BALLS] != -1)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -76,10 +85,10 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//4右摄像头球
-	if (REC_2.Square[BALL] != -1)
+	if (Recognize_Result_Square[CAMERA_2][BALLS] != -1)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -87,14 +96,14 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//5前摄像头蓝盒大小
-	if(REC_0.Square[BLUEZONE]>ZONE_SQUARE_L)
+	if(Recognize_Result_Square[CAMERA_0][BLUE_ZONE]>ZONE_SQUARE_LIMIT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if(REC_0.Square[REDZONE]>0)
+	else if(Recognize_Result_Square[CAMERA_0][BLUE_ZONE]>0)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -102,14 +111,14 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//6前摄像头红盒大小
-	if (REC_0.Square[REDZONE]>ZONE_SQUARE_L)
+	if (Recognize_Result_Square[CAMERA_0][RED_ZONE]>ZONE_SQUARE_LIMIT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_0.Square[REDZONE]>0)
+	else if (Recognize_Result_Square[CAMERA_0][RED_ZONE]>0)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -117,26 +126,26 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//7前摄像头红盒位置
-	if (REC_0.X[REDZONE]>=0&& REC_0.X[REDZONE]<LOCATION_LEFT_0)
+	if (Recognize_Result_X[CAMERA_0][RED_ZONE] >0&& Recognize_Result_X[CAMERA_0][RED_ZONE]<LOCATION_LEFT_MORE)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_0.X[REDZONE] >= LOCATION_LEFT_0 && REC_0.X[REDZONE]<LOCATION_LEFT_1)
+	else if (Recognize_Result_X[CAMERA_0][RED_ZONE] >= LOCATION_LEFT_MORE && Recognize_Result_X[CAMERA_0][RED_ZONE]<LOCATION_LEFT_LESS)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_0.X[REDZONE] >= LOCATION_LEFT_1 && REC_0.X[REDZONE]<LOCATION_RIGHT_1)
+	else if (Recognize_Result_X[CAMERA_0][RED_ZONE] >= LOCATION_LEFT_LESS && Recognize_Result_X[CAMERA_0][RED_ZONE]<LOCATION_RIGHT_LESS)
 	{
 		Serial.Serial_Write("4");
 	}
-	else if (REC_0.X[REDZONE] >= LOCATION_RIGHT_1 && REC_0.X[REDZONE]<LOCATION_RIGHT_0)
+	else if (Recognize_Result_X[CAMERA_0][RED_ZONE] >= LOCATION_RIGHT_LESS && Recognize_Result_X[CAMERA_0][RED_ZONE]<LOCATION_RIGHT_MORE)
 	{
 		Serial.Serial_Write("5");
 	}
-	else if (REC_0.X[REDZONE] >= LOCATION_RIGHT_0 && REC_0.X[REDZONE] <= 640)
+	else if (Recognize_Result_X[CAMERA_0][RED_ZONE] >= LOCATION_RIGHT_MORE && Recognize_Result_X[CAMERA_0][RED_ZONE] < 640)
 	{
 		Serial.Serial_Write("6");
 	}
@@ -144,26 +153,26 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//8前摄像头蓝盒位置
-	if (REC_0.X[BLUEZONE] >= 0 && REC_0.X[BLUEZONE]<LOCATION_LEFT_0)
+	if (Recognize_Result_X[CAMERA_0][BLUE_ZONE] >0 && Recognize_Result_X[CAMERA_0][BLUE_ZONE]<LOCATION_LEFT_MORE)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_0.X[BLUEZONE] >= LOCATION_LEFT_0 && REC_0.X[BLUEZONE]<LOCATION_LEFT_1)
+	else if (Recognize_Result_X[CAMERA_0][BLUE_ZONE] >= LOCATION_LEFT_MORE && Recognize_Result_X[CAMERA_0][BLUE_ZONE]<LOCATION_LEFT_LESS)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_0.X[BLUEZONE] >= LOCATION_LEFT_1 && REC_0.X[BLUEZONE]<LOCATION_RIGHT_1)
+	else if (Recognize_Result_X[CAMERA_0][BLUE_ZONE] >= LOCATION_LEFT_LESS && Recognize_Result_X[CAMERA_0][BLUE_ZONE]<LOCATION_RIGHT_LESS)
 	{
 		Serial.Serial_Write("4");
 	}
-	else if (REC_0.X[BLUEZONE] >= LOCATION_RIGHT_1 && REC_0.X[BLUEZONE]<LOCATION_RIGHT_0)
+	else if (Recognize_Result_X[CAMERA_0][BLUE_ZONE] >= LOCATION_RIGHT_LESS && Recognize_Result_X[CAMERA_0][BLUE_ZONE]<LOCATION_RIGHT_MORE)
 	{
 		Serial.Serial_Write("5");
 	}
-	else if (REC_0.X[BLUEZONE] >= LOCATION_RIGHT_0 && REC_0.X[BLUEZONE] <= 640)
+	else if (Recognize_Result_X[CAMERA_0][BLUE_ZONE] >= LOCATION_RIGHT_MORE && Recognize_Result_X[CAMERA_0][BLUE_ZONE] < 640)
 	{
 		Serial.Serial_Write("6");
 	}
@@ -171,14 +180,14 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//9左摄像头蓝盒大小
-	if (REC_1.Square[BLUEZONE]>ZONE_SQUARE_L)
+	if (Recognize_Result_Square[CAMERA_1][BLUE_ZONE]>ZONE_SQUARE_LIMIT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_1.Square[REDZONE]>0)
+	else if (Recognize_Result_Square[CAMERA_1][BLUE_ZONE]>0)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -186,14 +195,14 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//10左摄像头红盒大小
-	if (REC_1.Square[REDZONE]>ZONE_SQUARE_L)
+	if (Recognize_Result_Square[CAMERA_1][RED_ZONE]>ZONE_SQUARE_LIMIT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_1.Square[REDZONE]>0)
+	else if (Recognize_Result_Square[CAMERA_1][RED_ZONE]>0)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -201,26 +210,26 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//11左摄像头红盒位置
-	if (REC_1.X[REDZONE] >= 0 && REC_1.X[REDZONE]<LOCATION_LEFT_0)
+	if (Recognize_Result_X[CAMERA_1][RED_ZONE] >0 && Recognize_Result_X[CAMERA_1][RED_ZONE]<LOCATION_LEFT_MORE)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_1.X[REDZONE] >= LOCATION_LEFT_0 && REC_1.X[REDZONE]<LOCATION_LEFT_1)
+	else if (Recognize_Result_X[CAMERA_1][RED_ZONE] >= LOCATION_LEFT_MORE && Recognize_Result_X[CAMERA_1][RED_ZONE]<LOCATION_LEFT_LESS)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_1.X[REDZONE] >= LOCATION_LEFT_1 && REC_1.X[REDZONE]<LOCATION_RIGHT_1)
+	else if (Recognize_Result_X[CAMERA_1][RED_ZONE] >= LOCATION_LEFT_LESS && Recognize_Result_X[CAMERA_1][RED_ZONE]<LOCATION_RIGHT_LESS)
 	{
 		Serial.Serial_Write("4");
 	}
-	else if (REC_1.X[REDZONE] >= LOCATION_RIGHT_1 && REC_1.X[REDZONE]<LOCATION_RIGHT_0)
+	else if (Recognize_Result_X[CAMERA_1][RED_ZONE] >= LOCATION_RIGHT_LESS && Recognize_Result_X[CAMERA_1][RED_ZONE]<LOCATION_RIGHT_MORE)
 	{
 		Serial.Serial_Write("5");
 	}
-	else if (REC_1.X[REDZONE] >= LOCATION_RIGHT_0 && REC_1.X[REDZONE] <= 640)
+	else if (Recognize_Result_X[CAMERA_1][RED_ZONE] >= LOCATION_RIGHT_MORE && Recognize_Result_X[CAMERA_1][RED_ZONE] < 640)
 	{
 		Serial.Serial_Write("6");
 	}
@@ -228,26 +237,26 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//12左摄像头蓝盒位置
-	if (REC_1.X[BLUEZONE] >= 0 && REC_1.X[BLUEZONE]<LOCATION_LEFT_0)
+	if (Recognize_Result_X[CAMERA_1][BLUE_ZONE] >0 && Recognize_Result_X[CAMERA_1][BLUE_ZONE]<LOCATION_LEFT_MORE)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_1.X[BLUEZONE] >= LOCATION_LEFT_0 && REC_1.X[BLUEZONE]<LOCATION_LEFT_1)
+	else if (Recognize_Result_X[CAMERA_1][BLUE_ZONE] >= LOCATION_LEFT_MORE && Recognize_Result_X[CAMERA_1][BLUE_ZONE]<LOCATION_LEFT_LESS)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_1.X[BLUEZONE] >= LOCATION_LEFT_1 && REC_1.X[BLUEZONE]<LOCATION_RIGHT_1)
+	else if (Recognize_Result_X[CAMERA_1][BLUE_ZONE] >= LOCATION_LEFT_LESS && Recognize_Result_X[CAMERA_1][BLUE_ZONE]<LOCATION_RIGHT_LESS)
 	{
 		Serial.Serial_Write("4");
 	}
-	else if (REC_1.X[BLUEZONE] >= LOCATION_RIGHT_1 && REC_1.X[BLUEZONE]<LOCATION_RIGHT_0)
+	else if (Recognize_Result_X[CAMERA_1][BLUE_ZONE] >= LOCATION_RIGHT_LESS && Recognize_Result_X[CAMERA_1][BLUE_ZONE]<LOCATION_RIGHT_MORE)
 	{
 		Serial.Serial_Write("5");
 	}
-	else if (REC_1.X[BLUEZONE] >= LOCATION_RIGHT_0 && REC_1.X[BLUEZONE] <= 640)
+	else if (Recognize_Result_X[CAMERA_1][BLUE_ZONE] >= LOCATION_RIGHT_MORE && Recognize_Result_X[CAMERA_1][BLUE_ZONE] < 640)
 	{
 		Serial.Serial_Write("6");
 	}
@@ -255,14 +264,14 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//13右摄像头蓝盒大小
-	if (REC_2.Square[BLUEZONE]>ZONE_SQUARE_L)
+	if (Recognize_Result_Square[CAMERA_2][BLUE_ZONE]>ZONE_SQUARE_LIMIT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_2.Square[REDZONE]>0)
+	else if (Recognize_Result_Square[CAMERA_2][BLUE_ZONE]>0)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -270,14 +279,14 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//14右摄像头红盒大小
-	if (REC_2.Square[REDZONE]>ZONE_SQUARE_L)
+	if (Recognize_Result_Square[CAMERA_2][RED_ZONE]>ZONE_SQUARE_LIMIT)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_2.Square[REDZONE]>0)
+	else if (Recognize_Result_Square[CAMERA_2][RED_ZONE]>0)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -285,26 +294,26 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//15右摄像头红盒位置
-	if (REC_2.X[REDZONE] >= 0 && REC_2.X[REDZONE]<LOCATION_LEFT_0)
+	if (Recognize_Result_X[CAMERA_2][RED_ZONE] >0 && Recognize_Result_X[CAMERA_2][RED_ZONE]<LOCATION_LEFT_MORE)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_2.X[REDZONE] >= LOCATION_LEFT_0 && REC_2.X[REDZONE]<LOCATION_LEFT_1)
+	else if (Recognize_Result_X[CAMERA_2][RED_ZONE] >= LOCATION_LEFT_MORE && Recognize_Result_X[CAMERA_2][RED_ZONE]<LOCATION_LEFT_LESS)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_2.X[REDZONE] >= LOCATION_LEFT_1 && REC_2.X[REDZONE]<LOCATION_RIGHT_1)
+	else if (Recognize_Result_X[CAMERA_2][RED_ZONE] >= LOCATION_LEFT_LESS && Recognize_Result_X[CAMERA_2][RED_ZONE]<LOCATION_RIGHT_LESS)
 	{
 		Serial.Serial_Write("4");
 	}
-	else if (REC_2.X[REDZONE] >= LOCATION_RIGHT_1 && REC_2.X[REDZONE]<LOCATION_RIGHT_0)
+	else if (Recognize_Result_X[CAMERA_2][RED_ZONE] >= LOCATION_RIGHT_LESS && Recognize_Result_X[CAMERA_2][RED_ZONE]<LOCATION_RIGHT_MORE)
 	{
 		Serial.Serial_Write("5");
 	}
-	else if (REC_2.X[REDZONE] >= LOCATION_RIGHT_0 && REC_2.X[REDZONE] <= 640)
+	else if (Recognize_Result_X[CAMERA_2][RED_ZONE] >= LOCATION_RIGHT_MORE && Recognize_Result_X[CAMERA_2][RED_ZONE] < 640)
 	{
 		Serial.Serial_Write("6");
 	}
@@ -312,26 +321,26 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//16右摄像头蓝盒位置
-	if (REC_2.X[BLUEZONE] >= 0 && REC_2.X[BLUEZONE]<LOCATION_LEFT_0)
+	if (Recognize_Result_X[CAMERA_2][BLUE_ZONE] >0 && Recognize_Result_X[CAMERA_2][BLUE_ZONE]<LOCATION_LEFT_MORE)
 	{
 		Serial.Serial_Write("2");
 	}
-	else if (REC_2.X[BLUEZONE] >= LOCATION_LEFT_0 && REC_2.X[BLUEZONE]<LOCATION_LEFT_1)
+	else if (Recognize_Result_X[CAMERA_2][BLUE_ZONE] >= LOCATION_LEFT_MORE && Recognize_Result_X[CAMERA_2][BLUE_ZONE]<LOCATION_LEFT_LESS)
 	{
 		Serial.Serial_Write("3");
 	}
-	else if (REC_2.X[BLUEZONE] >= LOCATION_LEFT_1 && REC_2.X[BLUEZONE]<LOCATION_RIGHT_1)
+	else if (Recognize_Result_X[CAMERA_2][BLUE_ZONE] >= LOCATION_LEFT_LESS && Recognize_Result_X[CAMERA_2][BLUE_ZONE]<LOCATION_RIGHT_LESS)
 	{
 		Serial.Serial_Write("4");
 	}
-	else if (REC_2.X[BLUEZONE] >= LOCATION_RIGHT_1 && REC_2.X[BLUEZONE]<LOCATION_RIGHT_0)
+	else if (Recognize_Result_X[CAMERA_2][BLUE_ZONE] >= LOCATION_RIGHT_LESS && Recognize_Result_X[CAMERA_2][BLUE_ZONE]<LOCATION_RIGHT_MORE)
 	{
 		Serial.Serial_Write("5");
 	}
-	else if (REC_2.X[BLUEZONE] >= LOCATION_RIGHT_0 && REC_2.X[BLUEZONE] <= 640)
+	else if (Recognize_Result_X[CAMERA_2][BLUE_ZONE] >= LOCATION_RIGHT_MORE && Recognize_Result_X[CAMERA_2][BLUE_ZONE] < 640)
 	{
 		Serial.Serial_Write("6");
 	}
@@ -339,10 +348,10 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//17左摄像头障碍
-	if (REC_1.Square[BARRIER] != -1)
+	if (Recognize_Result_Square[CAMERA_1][BARRIERS] != -1)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -350,10 +359,10 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 
 	//18右摄像头障碍
-	if (REC_2.Square[BARRIER] != -1)
+	if (Recognize_Result_Square[CAMERA_2][BARRIERS] != -1)
 	{
 		Serial.Serial_Write("2");
 	}
@@ -361,50 +370,48 @@ void Serial_Print()
 	{
 		Serial.Serial_Write("1");
 	}
-	waitKey(SERIAL_DELAY_MS);
+	Delay(2);
 }
 
 void Imformation_Print()//启动信息显示
 {
-	printf_s("\n|************Visual System for Miner************|\n\n");
+	printf_s("\n|************沈航采矿机器人视觉识别系统************|\n\n");
 	printf_s("|*****************Version V");
 	printf_s("%d.", VERSION);
 	printf_s("%d******************|\n\n", TEST);
 }
 
-void Json_init()
-{
-	Json::Reader Config_Reader2;
-	Json::Value Config_Value2;
-	ifstream IFS2;
-	IFS2.open("config.json", ios::binary);
-	if (Config_Reader2.parse(IFS2, Config_Value2, false))
-	{
-		printf_s("SETUP: Json file reading...\n");
-		printf_s("SETUP: Loading Serial Port COM");
-		Serial_Num= Config_Value2["Serial_Port"].asInt();
-	}
-	else
-	{
-		printf_s("WARING: Json file read failed!\n");
-		printf_s("CUSTOM: Press any key to continue...\n");
-		char s; scanf_s(&s);
-	}
-	IFS2.close();
-}
-
 int main()
 {
-	Json_init();
 	Imformation_Print();
-	Serial_Statue = Serial.Serial_Init();
+	Serial.Serial_Init();
+	Json_Init();
+	Camera_Init();
 	while (1)
 	{
-		REC_0.Recognize();
-		REC_1.Recognize();
-		REC_2.Recognize();
+		
+		Read_Camera(CAMERA_0);
+		Find_Ball(CAMERA_0);
+		Find_Zone(RED_ZONE,CAMERA_0);
+		Find_Zone(BLUE_ZONE, CAMERA_0);
+		Find_Zone(BARRIERS, CAMERA_0);
+		Display_Result(CAMERA_0);
+		
+		Read_Camera(CAMERA_1);
+		Find_Ball(CAMERA_1);
+		Find_Zone(RED_ZONE,CAMERA_1);
+		Find_Zone(BLUE_ZONE, CAMERA_1);
+		Find_Zone(BARRIERS, CAMERA_1);
+		Display_Result(CAMERA_1);
+		
+		Read_Camera(CAMERA_2);
+		Find_Ball(CAMERA_2);
+		Find_Zone(RED_ZONE,CAMERA_2);
+		Find_Zone(BLUE_ZONE, CAMERA_1);
+		Find_Zone(BARRIERS, CAMERA_1);
+		Display_Result(CAMERA_2);
+
 		Serial_Print();
-		waitKey(33);
 	}
 	return 0;
 }

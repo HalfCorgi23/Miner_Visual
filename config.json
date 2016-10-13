@@ -1,14 +1,16 @@
 {
-    //黑色通道阈值
-    "H_Min_Black":0,
-    "S_Min_Black":0,
-    "V_Min_Black": 0,
-    "Black_Threshold": 240,
+    //串口编号
+    "Serial_Port": 5,
 
-    //黑色通道上阈值
-    "H_Max_Black":180,
-    "S_Max_Black":255,
-    "V_Max_Black":46,
+    //黑色通道阈值
+    "Black_Threshold":240,
+    "Black_Ball_Square_Min":30000,
+    "Black_Ball_Square_Max":200000,
+
+    //白色通道阈值
+    "White_Threshold":240,
+    "White_Ball_Square_Min":30000,
+    "White_Ball_Square_Max":200000,
 
     //障碍色通道下阈值
     "H_Min_Barrier":11,
@@ -38,21 +40,6 @@
     //红色通道上阈值
     "H_Max_Red":180,
     "S_Max_Red":255,
-    "V_Max_Red":255,
-
-    //白色通道下阈值
-    "H_Min_White":0,
-    "S_Min_White":0,
-    "V_Min_White": 221,
-    "White_Threshold": 225,
-
-    //白色通道上阈值
-    "H_Max_White":180,
-    "S_Max_White":30,
-    "V_Max_White": 255,
-
-    //串口编号
-    "Serial_Port": 5
-
+    "V_Max_Red":255
 
 }

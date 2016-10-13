@@ -1,79 +1,31 @@
 #pragma once
 
-#include <opencv/cv.h>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
-#include <vector>
-#include <sstream>
-#include <fstream>
+#ifndef RECOGNITION
 
-#include "include\json\json.h"
+int Recognize_Result_X[3][4];//识别结果X坐标数组
+int Recognize_Result_Y[3][4];//识别结果Y坐标数组
+int Recognize_Result_Square[3][4];//识别结果面积数组
 
-#pragma comment(lib,"jsoncpp.lib")
+//加载配置文件
+int Json_Init();
 
-const int DISPLAY_ON = 0;//显示处理结果开启
-const int DISPLAY_OFF = 1;//显示处理结果关闭
-const int BALL = 0;//球
-const int BARRIER = 4;//障碍
-const int BLUEZONE = 2;//蓝色区域
-const int REDZONE = 3;//红色区域
-const int BLACKBALL = 0;//黑色球
-const int WHITEBALL = 1;//白色球
-const int TARGET_NOT_FOUND = 0;//未找到目标
-const int TARGET_FOUND = 1;//已找到目标
-const int CAMERA_0 = 2;//0#摄像头
-const int CAMERA_1 = 1;//1#摄像头
-const int CAMERA_2 = 0;//2#摄像头
+//摄像头初始化
+int Camera_Init();
 
-/*目标识别(输入图像编号，图像显示开关)；摄像头 0：CAMERA_0，摄像头 1：CAMERA_1，摄像头 2：CAMERA_2；图像显示：DISPLAY_ON 开，DISPLAY_OFF 关
-Recognition::Recognize() - 识别函数
-Recognition::X[4] - 目标X坐标数组 {球，障碍，蓝色区域，红色区域}，-1为未发现目标
-Recognition::Y[4] - 目标Y坐标数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标
-Recognition::Square[4] - 目标面积数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标
-BALL 球；BARRIER 障碍；BLUEZONE 蓝色区域；REDZONE 红色区域*/
-class Recognition 
-{
-public:
-	//目标识别(输入图像编号，图像显示开关)；摄像头 0：CAMERA_0，摄像头 1：CAMERA_1，摄像头 2：CAMERA_2；图像显示：DISPLAY_ON 开，DISPLAY_OFF 关
-	Recognition(int camera_num, int display_sw);
+//寻找球
+int Find_Ball(int Cameranum);
 
-	//目标识别
-	Recognition();
+//寻找区域
+int Find_Zone(int color, int CameraNum);
 
-	int X[4];//目标X坐标数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标
-	int Y[4];//目标Y坐标数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标
-	int Square[4];//目标面积数组{球，障碍，蓝色区域，红色区域}，-1为未发现目标
+//读取摄像头
+int Read_Camera(int CameraNum);
 
-	//识别操作((Mat)输入图像)
-	int Recognize();
+//延时函数
+int Delay(int microsecond);
 
-private:
-	cv::VideoCapture *Camera;//识别对象摄像头实例
+//显示图像
+int Display_Result(int Cameranum);
 
-	int Camera_Num;//摄像头编号
-
-	//配置文件获取
-	void Json_Get();
-
-	//通道分离
-	void Channel_Separation();
-
-	/*寻找黑球*/
-	double Find_Black_Ball();
-
-	/*寻找白球*/
-	double Find_White_Ball();
-
-	/*寻找红色或蓝色区域*/
-	double Find_Zone(int channel);
-
-	/*识别结果显示*/
-	void Display_Result();
-
-	/*寻找球
-	-1 无目标
-	0 发现目标*/
-	int Find_Ball();
-};
+#endif // !RECOGNIZE
 

@@ -1,39 +1,58 @@
 #include "stdafx.h"
 #include "Serial_Connect.h"
+#include "include\json\json.h"
+#include <fstream>
 
+#pragma comment(lib,"jsoncppd.lib")
 
+int Serial_Num;//串口编号
 
 using namespace std;
 
 /*声明串口*/
 Serial_Connect::Serial_Connect()
 {
-	int serial_num=Serial_Num;
-	if (serial_num == 1)
+	Json::Reader Config_Reader;
+	Json::Value Config_Value;
+	ifstream IFS;
+	IFS.open("config.json", ios::binary);
+	if (Config_Reader.parse(IFS, Config_Value, false))
+	{
+		Serial_Num= Config_Value["Serial_Port"].asInt();
+		printf_s("串口配置文件加载成功！\n");
+	}
+	else
+	{
+		printf_s("串口配置文件加载失败！\n");
+		printf_s("按任意键退出……\n");
+		int oo = 0; scanf_s("%d", oo);
+	}
+	IFS.close();
+	if (Serial_Num == 1)
 	{
 		Handle_Comm = CreateFile(_T("COM1:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM1，读写权限，独占方式，直接打开，同步方式
 	}
-	else if (serial_num == 2)
+	else if (Serial_Num == 2)
 	{
 		Handle_Comm = CreateFile(_T("COM2:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM2，读写权限，独占方式，直接打开，同步方式
 	}
-	else if (serial_num == 3)
+	else if (Serial_Num == 3)
 	{
 		Handle_Comm = CreateFile(_T("COM3:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM3，读写权限，独占方式，直接打开，同步方式
 	}
-	else if (serial_num == 4)
+	else if (Serial_Num == 4)
 	{
 		Handle_Comm = CreateFile(_T("COM4:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM4，读写权限，独占方式，直接打开，同步方式
 	}
-	else if (serial_num == 5)
+	else if (Serial_Num == 5)
 	{
 		Handle_Comm = CreateFile(_T("COM5:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM5，读写权限，独占方式，直接打开，同步方式
 	}
-	else if (serial_num == 6)
+	else if (Serial_Num == 6)
 	{
 		Handle_Comm = CreateFile(_T("COM6:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM6，读写权限，独占方式，直接打开，同步方式
 	}
-	else if (serial_num == 7)
+	else if (Serial_Num == 7)
 	{
 		Handle_Comm = CreateFile(_T("COM7:"), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//COM7，读写权限，独占方式，直接打开，同步方式
 	}
@@ -44,18 +63,18 @@ int Serial_Connect::Serial_Init()
 {
 	if (Handle_Comm == (HANDLE)-1)
 	{
-		printf_s("SETUP: Serial COM");
+		printf_s("串口COM");
 		printf_s("%d", Serial_Num);
-		printf_s(" disconnected!\nWARNING: Press any key to continue...");
+		printf_s("连接失败！\n按任意键继续……");
 		char s;
 		scanf_s(&s);
 		return 1;
 	}
 	else
 	{
-		printf_s("SETUP: Serial COM");
+		printf_s("串口COM");
 		printf_s("%d", Serial_Num);
-		printf_s(" connected!\n");
+		printf_s("已连接\n");
 		//同步I/O方式打开串口
 		SetupComm(Handle_Comm, 1024, 1024);  //输入输出缓冲区1024
 		COMMTIMEOUTS TimeOuts;
@@ -98,11 +117,11 @@ void Serial_Connect::Serial_Write(char lpOut[1])
 	bWriteStat = WriteFile(Handle_Comm, lpOut, dwBytesWrite, &dwBytesWrite, NULL);
 	if (!bWriteStat)
 	{
-		printf("WARNING: Serial write failed! Statue:");
+		printf("写串口失败！状态：\n");
 	}
 	else
 	{
-		printf("CONNECTION: Serial write success! Statue:");
+		printf("写串口成功，状态：");
 	}
 	printf("%d\n", &lpOut);
 	PurgeComm(Handle_Comm,
